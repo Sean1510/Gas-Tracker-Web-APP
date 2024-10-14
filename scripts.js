@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         user = {
           id: data.user.id,
           username: data.user.username,
