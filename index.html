@@ -3,10 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gas Usage and Price Tracker</title>
+  <title>Gas Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .auth-container, .main-app {
+      display: none;
+    }
+
+    .auth-container.active {
+      display: block;
+    }
+
+    .main-app.active {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script src="scripts.js" type="module"></script>
+  <h1>Gas Tracker</h1>
+
+  <!-- Authentication Form (Login/Register) -->
+  <div id="auth-container" class="auth-container active">
+    <h2 id="auth-title">Login</h2>
+    <form id="auth-form">
+      <input type="text" id="username" placeholder="Username" required /><br /><br />
+      <input type="password" id="password" placeholder="Password" required /><br /><br />
+      <button type="submit" id="auth-submit">Login</button>
+    </form>
+    <button id="toggle-auth">Don't have an account? Register</button>
+  </div>
+
+  <!-- React Root (Main App Interface) -->
+  <div id="root" class="main-app"></div>
+
+  <script>
+    // Initial JavaScript for handling the authentication switch (Login/Register)
+    const authForm = document.getElementById('auth-form');
+    const authTitle = document.getElementById('auth-title');
+    const authSubmit = document.getElementById('auth-submit');
+    const toggleAuthButton = document.getElementById('toggle-auth');
+    const authContainer = document.getElementById('auth-container');
+    const rootContainer = document.getElementById('root');
+
+    let isRegistering = false;
+
+    toggleAuthButton.addEventListener('click', () => {
+      isRegistering = !isRegistering;
+      authTitle.textContent = isRegistering ? 'Register' : 'Login';
+      authSubmit.textContent = isRegistering ? 'Register' : 'Login';
+      toggleAuthButton.textContent = isRegistering ? 'Already have an account? Login' : "Don't have an account? Register";
+    });
+
+    // Dummy authentication submission for demo
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      // Simulate authentication success
+      if (username && password) {
+        // Hide auth form, display React app root
+        authContainer.classList.remove('active');
+        rootContainer.classList.add('active');
+
+        // Initialize the React app here (scripts.js will take over)
+        // You can pass the user data if needed
+      }
+    });
+  </script>
+
+  <script src="scripts.js"></script>
 </body>
 </html>
