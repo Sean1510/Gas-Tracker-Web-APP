@@ -6,6 +6,9 @@ const API_BASE_URL = '/.netlify/functions';
 
 const GasTracker = () => {
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false); // Toggle between login and register forms
+  const [authCredentials, setAuthCredentials] = useState({ username: '', password: '' });
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [fuelUps, setFuelUps] = useState([]);
@@ -13,8 +16,10 @@ const GasTracker = () => {
   const [newVehicle, setNewVehicle] = useState({ vin: '', make: '', model: '', year: '', initialMileage: '' });
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (isAuthenticated) {
+      fetchUserData();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (user) {
@@ -90,12 +95,44 @@ const GasTracker = () => {
     return mpg.toFixed(2);
   };
 
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const endpoint = isRegistering ? 'register' : 'login';
+      const response = await axios.post(`${API_BASE_URL}/${endpoint}`, authCredentials);
+      setUser(response.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error(`Error during ${isRegistering ? 'registration' : 'login'}:`, error);
+    }
+  };
+
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1>Gas Usage and Price Tracker</h1>
-
-      {!user ? (
-        <p>Loading user data...</p>
+      {!isAuthenticated ? (
+        <>
+          <h1>{isRegistering ? 'Register' : 'Login'}</h1>
+          <form onSubmit={handleAuthSubmit}>
+            <input
+              type="text"
+              value={authCredentials.username}
+              onChange={(e) => setAuthCredentials({ ...authCredentials, username: e.target.value })}
+              placeholder="Username"
+              required
+            />
+            <input
+              type="password"
+              value={authCredentials.password}
+              onChange={(e) => setAuthCredentials({ ...authCredentials, password: e.target.value })}
+              placeholder="Password"
+              required
+            />
+            <button type="submit">{isRegistering ? 'Register' : 'Login'}</button>
+          </form>
+          <button onClick={() => setIsRegistering(!isRegistering)}>
+            {isRegistering ? 'Already have an account? Login' : "Don't have an account? Register"}
+          </button>
+        </>
       ) : (
         <>
           <h2>Welcome, {user.username}!</h2>
