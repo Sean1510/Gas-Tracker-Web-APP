@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   async function fetchFuelUps(vehicleId) {
+    console.log('Fetching fuel-ups for vehicle:', vehicleId);
     try {
       const response = await fetch(`/.netlify/functions/getFuelUps?vehicleId=${vehicleId}`, {
         method: 'GET',
@@ -185,7 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch fuel-ups');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch fuel-ups');
       }
       return await response.json();
     } catch (error) {

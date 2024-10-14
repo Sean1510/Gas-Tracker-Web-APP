@@ -1,21 +1,36 @@
-// getFuelUps.js
-exports.handler = async (event) => {
-  const { vehicleId } = event.queryStringParameters;
+const { Client } = require('pg');
+const verifyToken = require('./verifyToken');
+
+const handler = async (event) => {
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+  });
+
+  const vehicleId = event.queryStringParameters.vehicleId;
+
+  if (!vehicleId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Vehicle ID is required' })
+    };
+  }
 
   try {
-    const client = await pool.connect();
-    const result = await client.query('SELECT * FROM fuel_ups WHERE vehicle_id = $1 ORDER BY date DESC', [vehicleId]);
-    client.release();
-
+    await client.connect();
+    const result = await client.query('SELECT * FROM fuel_ups WHERE vehicle_id = $1', [vehicleId]);
     return {
       statusCode: 200,
       body: JSON.stringify(result.rows)
     };
   } catch (err) {
-    console.error(err);
+    console.error('Database error:', err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to retrieve fuel-ups' })
     };
+  } finally {
+    await client.end();
   }
 };
+
+exports.handler = verifyToken(handler);
