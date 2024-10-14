@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let isRegistering = false;
   let user = null;
 
+  // Check if the user is already logged in
+  user = JSON.parse(localStorage.getItem('user'));
+  if (user) {
+    authContainer.classList.remove('active');
+    rootContainer.classList.add('active');
+    initializeApp();
+  } else {
+    // If user is not logged in, show the auth container
+    authContainer.classList.add('active');
+    rootContainer.classList.remove('active');
+  }
+
   // Toggle between Login and Register modes
   toggleAuthButton.addEventListener('click', () => {
     isRegistering = !isRegistering;
@@ -44,11 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await response.json();
       if (response.ok) {
-        // Authentication successful, show the app content
-        user = data;
+        const data = await response.json();
+        user = {
+          id: data.user.id,
+          username: data.user.username,
+          token: data.token
+        };
+        localStorage.setItem('user', JSON.stringify(user));
         authContainer.classList.remove('active');
         rootContainer.classList.add('active');
-        console.log('Success:', data);
+        console.log('Login successful');
         initializeApp();
       } else {
         alert(data.message);
@@ -91,6 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error fetching vehicles:', error);
       return [];
     }
+  }
+
+  function displayAddVehiclePrompt(container) {
+    container.innerHTML = `
+      <p>You don't have any vehicles yet. Let's add one!</p>
+      <button id="add-vehicle-btn">Add Vehicle</button>
+    `;
+    document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
   }
   
   function displayVehicles(vehicles, container) {

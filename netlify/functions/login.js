@@ -1,12 +1,11 @@
 const { Client } = require('pg');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 exports.handler = async (event) => {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
   });
-
-  await client.connect();
 
   const { username, password } = JSON.parse(event.body);
 
@@ -17,59 +16,43 @@ exports.handler = async (event) => {
     };
   }
 
-  // Query to get the user by username
-  const getUserQuery = `
-    SELECT id, username, password_hash FROM users WHERE username = $1;
-  `;
-
   try {
-    const res = await client.query(getUserQuery, [username]);
+    await client.connect();
+    const res = await client.query('SELECT id, username, password_hash FROM users WHERE username = $1', [username]);
     const user = res.rows[0];
 
-    if (!user) {
-      await client.end();
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return {
         statusCode: 401,
         body: JSON.stringify({ message: 'Invalid username or password.' }),
       };
     }
 
-    // Compare password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    if (!isPasswordValid) {
-      await client.end();
-      return {
-        statusCode: 401,
-        body: JSON.stringify({ message: 'Invalid username or password.' }),
-      };
-    }
-
-    // Fetch vehicles associated with the user
-    const getVehiclesQuery = `
-      SELECT id, vin, make, model, year, initial_mileage FROM vehicles WHERE user_id = $1;
-    `;
-    const vehiclesRes = await client.query(getVehiclesQuery, [user.id]);
-
-    const vehicles = vehiclesRes.rows;
-
-    await client.end();
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
     return {
       statusCode: 200,
       body: JSON.stringify({
+        message: 'Login successful',
+        token,
         user: {
           id: user.id,
           username: user.username,
-        },
-        vehicles,
+        }
       }),
     };
   } catch (error) {
     console.error('Error during login:', error);
-    await client.end();
     return {
       statusCode: 500,
       body: JSON.stringify({ message: 'An internal server error occurred.' }),
     };
+  } finally {
+    await client.end();
   }
 };

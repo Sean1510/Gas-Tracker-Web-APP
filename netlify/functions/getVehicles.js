@@ -1,13 +1,14 @@
-// getVehicles.js
-exports.handler = async (event) => {
-  // In a real application, you'd get the user ID from the authenticated session
-  const userId = 1; // Placeholder
+const { Client } = require('pg');
+const verifyToken = require('./verifyToken');
+
+const handler = async (event) => {
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+  });
 
   try {
-    const client = await pool.connect();
-    const result = await client.query('SELECT * FROM vehicles WHERE user_id = $1', [userId]);
-    client.release();
-
+    await client.connect();
+    const result = await client.query('SELECT * FROM vehicles WHERE user_id = $1', [event.user.userId]);
     return {
       statusCode: 200,
       body: JSON.stringify(result.rows)
@@ -18,5 +19,9 @@ exports.handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to retrieve vehicles' })
     };
+  } finally {
+    await client.end();
   }
 };
+
+exports.handler = verifyToken(handler);
