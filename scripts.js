@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import axios from 'axios';
 
 const API_BASE_URL = '/.netlify/functions';
@@ -206,4 +207,4 @@ const GasTracker = () => {
   );
 };
 
-export default GasTracker;
+ReactDOM.render(<GasTracker />, document.getElementById('root'));
