@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Authentication (Login/Register) Form Submission
+  toggleAuthButton.addEventListener('click', () => {
+    isRegistering = !isRegistering;
+    authTitle.textContent = isRegistering ? 'Register' : 'Login';
+    authSubmit.textContent = isRegistering ? 'Register' : 'Login';
+    toggleAuthButton.textContent = isRegistering ? 'Already have an account? Login' : "Don't have an account? Register";
+
+    // Show email field during registration
+    emailContainer.style.display = isRegistering ? 'block' : 'none';
+  });
+
+  // Form submission handler for Login/Register
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
