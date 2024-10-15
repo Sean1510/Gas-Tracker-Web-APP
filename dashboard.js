@@ -62,25 +62,31 @@ document.addEventListener('DOMContentLoaded', () => {
       
       function displayVehicles(vehicles, container) {
         container.innerHTML = '<h2>Your Vehicles</h2>';
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'grid-container';
+        
         vehicles.forEach(vehicle => {
           const vehicleElement = document.createElement('div');
-          vehicleElement.className = 'vehicle';
+          vehicleElement.className = 'grid-item';
           vehicleElement.innerHTML = `
             <h3>${vehicle.year} ${vehicle.make} ${vehicle.model}</h3>
-            <p>VIN: ${vehicle.vin}</p>
-            <p>Initial Mileage: ${vehicle.initial_mileage}</p>
+            <p><strong>VIN:</strong> ${vehicle.vin}</p>
+            <p><strong>Initial Mileage:</strong> ${vehicle.initial_mileage}</p>
             <button class="view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">View Fuel-Ups</button>
           `;
-          container.appendChild(vehicleElement);
+          gridContainer.appendChild(vehicleElement);
       
           vehicleElement.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
             displayFuelUps(vehicle.id);
           });
         });
+        
+        container.appendChild(gridContainer);
       
         const addVehicleBtn = document.createElement('button');
         addVehicleBtn.textContent = 'Add Another Vehicle';
         addVehicleBtn.addEventListener('click', showAddVehicleForm);
+        addVehicleBtn.style.marginTop = '20px';
         container.appendChild(addVehicleBtn);
       }
       
@@ -92,29 +98,36 @@ document.addEventListener('DOMContentLoaded', () => {
       
         if (fuelUps.length === 0) {
           fuelUpsContainer.innerHTML = `
+            <h3>Fuel-Ups</h3>
             <p>No fuel-ups recorded for this vehicle yet.</p>
             <button id="add-fuel-up-btn" data-vehicle-id="${vehicleId}">Add Fuel-Up</button>
           `;
           document.getElementById('add-fuel-up-btn').addEventListener('click', () => showAddFuelUpForm(vehicleId));
         } else {
           fuelUpsContainer.innerHTML = '<h3>Fuel-Ups</h3>';
+          const fuelUpGrid = document.createElement('div');
+          fuelUpGrid.className = 'fuel-up-grid';
+          
           fuelUps.forEach(fuelUp => {
             const fuelUpElement = document.createElement('div');
-            fuelUpElement.className = 'fuel-up';
+            fuelUpElement.className = 'fuel-up-item';
             fuelUpElement.innerHTML = `
-              <p>Date: ${new Date(fuelUp.date).toLocaleDateString()}</p>
-              <p>Mileage: ${fuelUp.mileage}</p>
-              <p>Liters: ${fuelUp.liters}</p>
-              <p>Price per Liter: $${fuelUp.price_per_liter.toFixed(3)}</p>
-              <p>Total Cost: $${fuelUp.total_cost.toFixed(2)}</p>
-              <p>Gas Station: ${fuelUp.gas_station}</p>
+              <p><strong>Date:</strong> ${new Date(fuelUp.date).toLocaleDateString()}</p>
+              <p><strong>Mileage:</strong> ${fuelUp.mileage}</p>
+              <p><strong>Liters:</strong> ${fuelUp.liters.toFixed(2)}</p>
+              <p><strong>Price/L:</strong> $${fuelUp.price_per_liter.toFixed(3)}</p>
+              <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(2)}</p>
+              <p><strong>Station:</strong> ${fuelUp.gas_station}</p>
             `;
-            fuelUpsContainer.appendChild(fuelUpElement);
+            fuelUpGrid.appendChild(fuelUpElement);
           });
+          
+          fuelUpsContainer.appendChild(fuelUpGrid);
       
           const addFuelUpBtn = document.createElement('button');
           addFuelUpBtn.textContent = 'Add Fuel-Up';
           addFuelUpBtn.addEventListener('click', () => showAddFuelUpForm(vehicleId));
+          addFuelUpBtn.style.marginTop = '20px';
           fuelUpsContainer.appendChild(addFuelUpBtn);
         }
       }
