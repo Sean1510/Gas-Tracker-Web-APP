@@ -33,106 +33,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function fetchVehicles() {
-        try {
-          const response = await fetch('/.netlify/functions/getVehicles', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${user.token}`
-            }
-          });
-          if (!response.ok) {
-            throw new Error('Failed to fetch vehicles');
+      try {
+        const response = await fetch('/.netlify/functions/getVehicles', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${user.token}`
           }
-          const vehicles = await response.json();
-
-          // For each vehicle, update the `current_mileage` based on the latest fuel-up
-          for (let vehicle of vehicles) {
-            const latestFuelUp = await fetchLatestFuelUp(vehicle.id);
-            if (latestFuelUp && latestFuelUp.mileage) {
-              vehicle.current_mileage = latestFuelUp.mileage;
-            }
-          }
-      
-          return vehicles;
-        } catch (error) {
-          console.error('Error fetching vehicles:', error);
-          return [];
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch vehicles');
         }
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching vehicles:', error);
+        return [];
       }
+    }
     
-      function displayAddVehiclePrompt(container) {
-        container.innerHTML = `
-          <p>You don't have any vehicles yet. Let's add one!</p>
-          <button id="add-vehicle-btn">Add Vehicle</button>
-        `;
-        document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
-      }
+    function displayAddVehiclePrompt(container) {
+      container.innerHTML = `
+        <p>You don't have any vehicles yet. Let's add one!</p>
+        <button id="add-vehicle-btn">Add Vehicle</button>
+      `;
+      document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
+    }
       
-      function displayVehicles(vehicles, container) {
-        container.innerHTML = `
-            <div class="vehicles-header">
-                <h2>Your Vehicles</h2>
-                <button id="add-vehicle-btn" class="btn btn-primary">
-                    <span class="plus-icon">+</span> Add Vehicle
+    async function displayVehicles(vehicles, container) {
+      container.innerHTML = `
+        <div class="vehicles-header">
+            <h2>Your Vehicles</h2>
+            <button id="add-vehicle-btn" class="btn btn-primary">
+                <span class="plus-icon">+</span> Add Vehicle
+            </button>
+        </div>
+      `;
+      
+      const gridContainer = document.createElement('div');
+      gridContainer.className = 'vehicles-grid';
+      
+      vehicles.forEach(async vehicle => {
+        const vehicleCard = document.createElement('div');
+        vehicleCard.className = 'vehicle-card';
+        
+        // Calculate a random gradient for the card header
+        const gradients = [
+            'linear-gradient(135deg, #667eea, #764ba2)',
+            'linear-gradient(135deg, #2193b0, #6dd5ed)',
+            'linear-gradient(135deg, #ee9ca7, #ffdde1)',
+            'linear-gradient(135deg, #42275a, #734b6d)',
+            'linear-gradient(135deg, #bdc3c7, #2c3e50)'
+        ];
+        const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+
+        // Fetch latest mileage from fuel-ups
+        const latestMileage = await fetchLatestFuelUp(vehicle.id);
+        const currentMileage = latestMileage !== null ? latestMileage : vehicle.current_mileage;
+        
+        vehicleCard.innerHTML = `
+            <div class="vehicle-card-header" style="background: ${randomGradient}">
+                <div class="vehicle-icon">🚗</div>
+                <h3>${vehicle.year} ${vehicle.make}</h3>
+                <p class="vehicle-model">${vehicle.model}</p>
+            </div>
+            <div class="vehicle-card-body">
+                <div class="vehicle-info">
+                    <div class="info-item">
+                        <span class="info-label">VIN</span>
+                        <span class="info-value">${vehicle.vin}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Current Mileage</span>
+                        <span class="info-value">${currentMileage.toLocaleString()} km</span>
+                    </div>
+                </div>
+                <button class="btn btn-secondary view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">
+                    View Fuel History
                 </button>
             </div>
         `;
         
-        const gridContainer = document.createElement('div');
-        gridContainer.className = 'vehicles-grid';
+        gridContainer.appendChild(vehicleCard);
         
-        vehicles.forEach(vehicle => {
-            const vehicleCard = document.createElement('div');
-            vehicleCard.className = 'vehicle-card';
-            
-            // Calculate a random gradient for the card header
-            const gradients = [
-                'linear-gradient(135deg, #667eea, #764ba2)',
-                'linear-gradient(135deg, #2193b0, #6dd5ed)',
-                'linear-gradient(135deg, #ee9ca7, #ffdde1)',
-                'linear-gradient(135deg, #42275a, #734b6d)',
-                'linear-gradient(135deg, #bdc3c7, #2c3e50)'
-            ];
-            const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
-            
-            vehicleCard.innerHTML = `
-                <div class="vehicle-card-header" style="background: ${randomGradient}">
-                    <div class="vehicle-icon">🚗</div>
-                    <h3>${vehicle.year} ${vehicle.make}</h3>
-                    <p class="vehicle-model">${vehicle.model}</p>
-                </div>
-                <div class="vehicle-card-body">
-                    <div class="vehicle-info">
-                        <div class="info-item">
-                            <span class="info-label">VIN</span>
-                            <span class="info-value">${vehicle.vin}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Current Mileage</span>
-                            <span class="info-value">${vehicle.current_mileage.toLocaleString()} km</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-secondary view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">
-                        View Fuel History
-                    </button>
-                </div>
-            `;
-            
-            gridContainer.appendChild(vehicleCard);
-            
-            vehicleCard.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
-                document.querySelectorAll('.vehicle-card').forEach(card => {
-                    card.classList.remove('active');
-                });
-                vehicleCard.classList.add('active');
-                displayFuelUps(vehicle.id);
+        vehicleCard.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+                card.classList.remove('active');
             });
+            vehicleCard.classList.add('active');
+            displayFuelUps(vehicle.id);
         });
-        
-        container.appendChild(gridContainer);
-        
-        document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
-      }
+      });
+      
+      container.appendChild(gridContainer);
+      
+      document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
+    }
 
       function displayAddVehiclePrompt(container) {
         container.innerHTML = `
@@ -381,112 +375,112 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
       
-      function showAddFuelUpForm(vehicleId) {
-        const formHTML = `
-          <div class="modal" id="addFuelUpModal">
-            <div class="modal-content">
-              <h3>Add Fuel-Up</h3>
-              <form id="addFuelUpForm" class="form">
-                <div class="form-group">
-                  <label for="date">Date</label>
-                  <input type="date" id="date" required>
-                </div>
-                <div class="form-group">
-                  <label for="mileage">Mileage</label>
-                  <input type="number" id="mileage" required>
-                </div>
-                <div class="form-group">
-                  <label for="liters">Liters</label>
-                  <input type="number" id="liters" step="0.001" required>
-                </div>
-                <div class="form-group">
-                  <label for="price_per_liter">Price per Liter</label>
-                  <input type="number" id="price_per_liter" step="0.001" required>
-                </div>
-                <div class="form-group">
-                  <label for="gas_station">Gas Station</label>
-                  <input type="text" id="gas_station" required>
-                </div>
-                <div class="form-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="is_full_tank" checked>
-                    Full Tank
-                  </label>
-                </div>
-                <div class="form-actions">
-                  <button type="submit" class="btn btn-primary">Add Fuel-Up</button>
-                  <button type="button" class="btn btn-secondary" id="cancelAddFuelUp">Cancel</button>
-                </div>
-              </form>
-            </div>
+    function showAddFuelUpForm(vehicleId) {
+      const formHTML = `
+        <div class="modal" id="addFuelUpModal">
+          <div class="modal-content">
+            <h3>Add Fuel-Up</h3>
+            <form id="addFuelUpForm" class="form">
+              <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required>
+              </div>
+              <div class="form-group">
+                <label for="mileage">Mileage</label>
+                <input type="number" id="mileage" required>
+              </div>
+              <div class="form-group">
+                <label for="liters">Liters</label>
+                <input type="number" id="liters" step="0.001" required>
+              </div>
+              <div class="form-group">
+                <label for="price_per_liter">Price per Liter</label>
+                <input type="number" id="price_per_liter" step="0.001" required>
+              </div>
+              <div class="form-group">
+                <label for="gas_station">Gas Station</label>
+                <input type="text" id="gas_station" required>
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="is_full_tank" checked>
+                  Full Tank
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Add Fuel-Up</button>
+                <button type="button" class="btn btn-secondary" id="cancelAddFuelUp">Cancel</button>
+              </div>
+            </form>
           </div>
-        `;
-      
-        document.body.insertAdjacentHTML('beforeend', formHTML);
-      
-        const modal = document.getElementById('addFuelUpModal');
-        const form = document.getElementById('addFuelUpForm');
-        const cancelButton = document.getElementById('cancelAddFuelUp');
-      
-        modal.style.display = 'block';
-      
-        cancelButton.addEventListener('click', () => {
+        </div>
+      `;
+    
+      document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+      const modal = document.getElementById('addFuelUpModal');
+      const form = document.getElementById('addFuelUpForm');
+      const cancelButton = document.getElementById('cancelAddFuelUp');
+    
+      modal.style.display = 'block';
+    
+      cancelButton.addEventListener('click', () => {
+        modal.remove();
+      });
+    
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Check if it's the first fuel-up
+        const fuelUps = await fetchFuelUps(vehicleId);
+        if (fuelUps.length === 0 && !document.getElementById('is_full_tank').checked) {
+          showNotification("To ensure accuracy of your gas usage calculations, your first fill-up must be full. Please try again.", 'error');
+          return;
+        }
+    
+        const fuelUpData = {
+          vehicle_id: vehicleId,
+          date: document.getElementById('date').value,
+          mileage: parseInt(document.getElementById('mileage').value),
+          liters: parseFloat(document.getElementById('liters').value),
+          price_per_liter: parseFloat(document.getElementById('price_per_liter').value),
+          gas_station: document.getElementById('gas_station').value,
+          is_full_tank: document.getElementById('is_full_tank').checked
+        };
+        
+        // Calculate total_cost
+        fuelUpData.total_cost = fuelUpData.liters * fuelUpData.price_per_liter;
+        
+        try {
+          const response = await fetch('/.netlify/functions/addFuelUp', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${user.token}`
+            },
+            body: JSON.stringify(fuelUpData)
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to add fuel-up');
+          }
+          
           modal.remove();
-        });
-      
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          
-          // Check if it's the first fuel-up
-          const fuelUps = await fetchFuelUps(vehicleId);
-          if (fuelUps.length === 0 && !document.getElementById('is_full_tank').checked) {
-            showNotification("To ensure accuracy of your gas usage calculations, your first fill-up must be full. Please try again.", 'error');
-            return;
-          }
-      
-          const fuelUpData = {
-            vehicle_id: vehicleId,
-            date: document.getElementById('date').value,
-            mileage: parseInt(document.getElementById('mileage').value),
-            liters: parseFloat(document.getElementById('liters').value),
-            price_per_liter: parseFloat(document.getElementById('price_per_liter').value),
-            gas_station: document.getElementById('gas_station').value,
-            is_full_tank: document.getElementById('is_full_tank').checked
-          };
-          
-          // Calculate total_cost
-          fuelUpData.total_cost = fuelUpData.liters * fuelUpData.price_per_liter;
-          
-          try {
-            const response = await fetch('/.netlify/functions/addFuelUp', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${user.token}`
-              },
-              body: JSON.stringify(fuelUpData)
-            });
-            
-            if (!response.ok) {
-              throw new Error('Failed to add fuel-up');
-            }
-            
-            modal.remove();
-            showNotification('Fuel-up added successfully', 'success');
-            displayFuelUps(vehicleId); // Refresh the fuel-ups list
-          } catch (error) {
-            console.error('Error adding fuel-up:', error);
-            showNotification('Failed to add fuel-up. Please try again.', 'error');
-          }
-        });
-      }
+          showNotification('Fuel-up added successfully', 'success');
+          displayFuelUps(vehicleId); // Refresh the fuel-ups list
+        } catch (error) {
+          console.error('Error adding fuel-up:', error);
+          showNotification('Failed to add fuel-up. Please try again.', 'error');
+        }
+      });
+    }
 
-      // Add this helper function for notifications
-      function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-      }
+    // Add this helper function for notifications
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    }
   });
