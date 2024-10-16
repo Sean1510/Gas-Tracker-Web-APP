@@ -267,6 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
+          // Check if it's the first fuel-up
+          const fuelUps = await fetchFuelUps(vehicleId);
+          if (fuelUps.length === 0 && !document.getElementById('is_full_tank').checked) {
+            alert("To make sure the accuracy of your gas usage calculations, your first fill-up must be full. Please add next time.");
+            return; // Prevent submission
+          }
+
           const fuelUpData = {
             vehicle_id: vehicleId,
             date: document.getElementById('date').value,
