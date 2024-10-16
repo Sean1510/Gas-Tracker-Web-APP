@@ -1,61 +1,73 @@
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px;
-  }
-  
-  .grid-item {
-    background-color: #f0f0f0;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-  }
-  
-  .grid-item:hover {
-    transform: translateY(-5px);
-  }
-  
-  .grid-item h3 {
-    margin-top: 0;
-    color: #333;
-  }
-  
-  .grid-item p {
-    margin: 5px 0;
-    color: #666;
-  }
-  
-  .grid-item button {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .grid-item button:hover {
-    background-color: #0056b3;
-  }
-  
-  .fuel-up-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-  }
-  
-  .fuel-up-item {
-    background-color: #e9ecef;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-  
-  .fuel-up-item p {
-    margin: 5px 0;
-    font-size: 0.9em;
-  }
+.fuel-ups-wrapper {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.fuel-ups-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.fuel-ups-table thead {
+  background: #f8f9fa;
+}
+
+.fuel-ups-table th {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.fuel-ups-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  color: #212529;
+}
+
+.fuel-ups-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.statistics-summary {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 20px 0;
+}
+
+.statistics-summary h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+}
+
+.statistics-summary p {
+  margin: 5px 0;
+  color: #212529;
+}
+
+#add-fuel-up-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+#add-fuel-up-btn:hover {
+  background: #0056b3;
+}
