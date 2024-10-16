@@ -270,17 +270,52 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       function showAddVehicleForm() {
-        const form = document.createElement('form');
-        form.innerHTML = `
-          <h3>Add New Vehicle</h3>
-          <input type="text" id="vin" placeholder="VIN" required>
-          <input type="text" id="make" placeholder="Make" required>
-          <input type="text" id="model" placeholder="Model" required>
-          <input type="number" id="year" placeholder="Year" required>
-          <input type="number" id="initial_mileage" placeholder="Initial Mileage" required>
-          <button type="submit">Add Vehicle</button>
+        const formHTML = `
+          <div class="modal" id="addVehicleModal">
+            <div class="modal-content">
+              <h3>Add New Vehicle</h3>
+              <form id="addVehicleForm" class="form">
+                <div class="form-group">
+                  <label for="vin">VIN</label>
+                  <input type="text" id="vin" required>
+                </div>
+                <div class="form-group">
+                  <label for="make">Make</label>
+                  <input type="text" id="make" required>
+                </div>
+                <div class="form-group">
+                  <label for="model">Model</label>
+                  <input type="text" id="model" required>
+                </div>
+                <div class="form-group">
+                  <label for="year">Year</label>
+                  <input type="number" id="year" required>
+                </div>
+                <div class="form-group">
+                  <label for="initial_mileage">Initial Mileage</label>
+                  <input type="number" id="initial_mileage" required>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">Add Vehicle</button>
+                  <button type="button" class="btn btn-secondary" id="cancelAddVehicle">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
         `;
-        
+      
+        document.body.insertAdjacentHTML('beforeend', formHTML);
+      
+        const modal = document.getElementById('addVehicleModal');
+        const form = document.getElementById('addVehicleForm');
+        const cancelButton = document.getElementById('cancelAddVehicle');
+      
+        modal.style.display = 'block';
+      
+        cancelButton.addEventListener('click', () => {
+          modal.remove();
+        });
+      
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
           const vehicleData = {
@@ -305,41 +340,79 @@ document.addEventListener('DOMContentLoaded', () => {
               throw new Error('Failed to add vehicle');
             }
             
-            // Refresh the vehicles list
-            initializeApp();
+            modal.remove();
+            showNotification('Vehicle added successfully', 'success');
+            initializeApp(); // Refresh the vehicles list
           } catch (error) {
             console.error('Error adding vehicle:', error);
-            alert('Failed to add vehicle. Please try again.');
+            showNotification('Failed to add vehicle. Please try again.', 'error');
           }
         });
-        
-        rootContainer.appendChild(form);
       }
       
       function showAddFuelUpForm(vehicleId) {
-        const form = document.createElement('form');
-        form.innerHTML = `
-          <h3>Add Fuel-Up</h3>
-          <input type="date" id="date" required>
-          <input type="number" id="mileage" placeholder="Mileage" required>
-          <input type="number" id="liters" placeholder="Liters" step="0.001" required>
-          <input type="number" id="price_per_liter" placeholder="Price per Liter" step="0.001" required>
-          <input type="text" id="gas_station" placeholder="Gas Station" required>
-          <label>
-            <input type="checkbox" id="is_full_tank" checked> Full Tank
-          </label>
-          <button type="submit">Add Fuel-Up</button>
+        const formHTML = `
+          <div class="modal" id="addFuelUpModal">
+            <div class="modal-content">
+              <h3>Add Fuel-Up</h3>
+              <form id="addFuelUpForm" class="form">
+                <div class="form-group">
+                  <label for="date">Date</label>
+                  <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                  <label for="mileage">Mileage</label>
+                  <input type="number" id="mileage" required>
+                </div>
+                <div class="form-group">
+                  <label for="liters">Liters</label>
+                  <input type="number" id="liters" step="0.001" required>
+                </div>
+                <div class="form-group">
+                  <label for="price_per_liter">Price per Liter</label>
+                  <input type="number" id="price_per_liter" step="0.001" required>
+                </div>
+                <div class="form-group">
+                  <label for="gas_station">Gas Station</label>
+                  <input type="text" id="gas_station" required>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="is_full_tank" checked>
+                    Full Tank
+                  </label>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">Add Fuel-Up</button>
+                  <button type="button" class="btn btn-secondary" id="cancelAddFuelUp">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
         `;
-        
+      
+        document.body.insertAdjacentHTML('beforeend', formHTML);
+      
+        const modal = document.getElementById('addFuelUpModal');
+        const form = document.getElementById('addFuelUpForm');
+        const cancelButton = document.getElementById('cancelAddFuelUp');
+      
+        modal.style.display = 'block';
+      
+        cancelButton.addEventListener('click', () => {
+          modal.remove();
+        });
+      
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
+          
           // Check if it's the first fuel-up
           const fuelUps = await fetchFuelUps(vehicleId);
           if (fuelUps.length === 0 && !document.getElementById('is_full_tank').checked) {
-            alert("To make sure the accuracy of your gas usage calculations, your first fill-up must be full. Please add next time.");
-            return; // Prevent submission
+            showNotification("To ensure accuracy of your gas usage calculations, your first fill-up must be full. Please try again.", 'error');
+            return;
           }
-
+      
           const fuelUpData = {
             vehicle_id: vehicleId,
             date: document.getElementById('date').value,
@@ -367,14 +440,22 @@ document.addEventListener('DOMContentLoaded', () => {
               throw new Error('Failed to add fuel-up');
             }
             
-            // Refresh the fuel-ups list
-            displayFuelUps(vehicleId);
+            modal.remove();
+            showNotification('Fuel-up added successfully', 'success');
+            displayFuelUps(vehicleId); // Refresh the fuel-ups list
           } catch (error) {
             console.error('Error adding fuel-up:', error);
-            alert('Failed to add fuel-up. Please try again.');
+            showNotification('Failed to add fuel-up. Please try again.', 'error');
           }
         });
-        
-        rootContainer.appendChild(form);
+      }
+
+      // Add this helper function for notifications
+      function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
       }
   });
