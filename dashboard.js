@@ -108,9 +108,25 @@ document.addEventListener('DOMContentLoaded', () => {
           const fuelUpGrid = document.createElement('div');
           fuelUpGrid.className = 'fuel-up-grid';
           
-          fuelUps.forEach(fuelUp => {
+          let totalLiters = 0;
+          let totalDistance = 0;
+      
+          fuelUps.forEach((fuelUp, index) => {
             const fuelUpElement = document.createElement('div');
             fuelUpElement.className = 'fuel-up-item';
+      
+            // Calculate gas usage for each fuel-up (except the first one)
+            let gasUsage = '';
+            if (index > 0) {
+              const prevFuelUp = fuelUps[index - 1];
+              const distance = fuelUp.mileage - prevFuelUp.mileage;
+              const usage = (fuelUp.liters / distance) * 100;
+              gasUsage = `<p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>`;
+      
+              totalLiters += fuelUp.liters;
+              totalDistance += distance;
+            }
+      
             fuelUpElement.innerHTML = `
               <p><strong>Date:</strong> ${new Date(fuelUp.date).toLocaleDateString()}</p>
               <p><strong>Mileage:</strong> ${fuelUp.mileage}</p>
@@ -118,11 +134,23 @@ document.addEventListener('DOMContentLoaded', () => {
               <p><strong>Price/L:</strong> $${fuelUp.price_per_liter.toFixed(3)}</p>
               <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(2)}</p>
               <p><strong>Station:</strong> ${fuelUp.gas_station}</p>
+              ${gasUsage}
             `;
             fuelUpGrid.appendChild(fuelUpElement);
           });
           
           fuelUpsContainer.appendChild(fuelUpGrid);
+      
+          // Calculate and display average gas usage
+          if (fuelUps.length > 1) {
+            const averageUsage = (totalLiters / totalDistance) * 100;
+            const averageElement = document.createElement('div');
+            averageElement.innerHTML = `
+              <h4>Average Gas Usage</h4>
+              <p>${averageUsage.toFixed(2)} L/100km</p>
+            `;
+            fuelUpsContainer.appendChild(averageElement);
+          }
       
           const addFuelUpBtn = document.createElement('button');
           addFuelUpBtn.textContent = 'Add Fuel-Up';
