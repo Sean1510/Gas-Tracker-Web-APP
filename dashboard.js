@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstFuelUp = fuelUps[fuelUps.length - 1];
             const lastFullTankIndex = fuelUps.findIndex(fuelUp => fuelUp.is_full_tank);
             // Calculate totalLiters by summing all fuel-ups from the first one to the last full tank
-            for (let i = lastFullTankIndex; i < fuelUps.length; i++) {
+            for (let i = lastFullTankIndex; i < fuelUps.length - 1; i++) {
               totalLiters += fuelUps[i].liters;
             }
             const totalDistance = fuelUps[lastFullTankIndex].mileage - firstFuelUp.mileage;
