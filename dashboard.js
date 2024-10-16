@@ -124,7 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
               const nextFuelUp = fuelUps[index + 1];
               const distance = fuelUp.mileage - nextFuelUp.mileage;
               const usage = (fuelUp.liters / distance) * 100;
-              gasUsage = `<p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>`;
+              const startDate = new Date(nextFuelUp.date).toLocaleDateString();
+              const endDate = new Date(fuelUp.date).toLocaleDateString();
+              gasUsage = `
+                <p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>
+                <p><strong>Date Range:</strong> ${startDate} - ${endDate}</p>
+              `;
       
               totalLiters += fuelUp.liters;
               totalDistance += distance;
@@ -151,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const averageElement = document.createElement('div');
             averageElement.innerHTML = `
               <h4>Gas Usage Statistics</h4>
-              <p><strong>Average (excluding first fill-up):</strong> ${averageUsage.toFixed(2)} L/100km</p>
+              <p><strong>Overall Average (excluding first fill-up):</strong> ${averageUsage.toFixed(2)} L/100km</p>
             `;
             fuelUpsContainer.appendChild(averageElement);
           }
