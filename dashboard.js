@@ -239,12 +239,32 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHTML += `
               <div class="statistics-summary">
                 <h4>Overall Statistics</h4>
-                <p>Average Consumption: ${averageUsage.toFixed(2)} L/100km</p>
-                <p>Average Cost per Liter: $${averageCost.toFixed(2)}</p>
-                <p>Total Distance: ${totalDistance.toLocaleString()} km</p>
-                <p>Total Fuel: ${totalLiters.toFixed(2)} L</p>
-                <p>Total Cost: $${totalCost.toFixed(2)}</p>
-                <p>Cost per km: $${costperkm.toFixed(2)}</p>
+                <div class="statistics-grid">
+                  <div class="statistic-card">
+                    <h5>Average Consumption</h5>
+                    <p class="statistic-value">${averageUsage.toFixed(2)} L/100km</p>
+                  </div>
+                  <div class="statistic-card">
+                    <h5>Average Cost per Liter</h5>
+                    <p class="statistic-value">$${averageCost.toFixed(2)}</p>
+                  </div>
+                  <div class="statistic-card">
+                    <h5>Total Distance</h5>
+                    <p class="statistic-value">${totalDistance.toLocaleString()} km</p>
+                  </div>
+                  <div class="statistic-card">
+                    <h5>Total Fuel</h5>
+                    <p class="statistic-value">${totalLiters.toFixed(2)} L</p>
+                  </div>
+                  <div class="statistic-card">
+                    <h5>Total Cost</h5>
+                    <p class="statistic-value">$${totalCost.toFixed(2)}</p>
+                  </div>
+                  <div class="statistic-card">
+                    <h5>Cost per km</h5>
+                    <p class="statistic-value">$${costperkm.toFixed(2)}</p>
+                  </div>
+                </div>
               </div>
             `;
           }
