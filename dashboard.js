@@ -178,8 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tbody>
           `;
       
-          let totalLiters = 0;
-      
           fuelUps.forEach((fuelUp, index) => {
             let gasUsage = '-';
             let cumulativeLiters = fuelUp.liters;
@@ -219,22 +217,30 @@ document.addEventListener('DOMContentLoaded', () => {
       
           // Calculate overall statistics
           if (fuelUps.length > 1) {
+            let totalLiters = 0;
+            let totalCost = 0;
             const firstFuelUp = fuelUps[fuelUps.length - 1];
             const lastFullTankIndex = fuelUps.findIndex(fuelUp => fuelUp.is_full_tank);
             
             for (let i = lastFullTankIndex; i < fuelUps.length - 1; i++) {
               totalLiters += fuelUps[i].liters;
+              totalCost += fuelUps[i].total_cost;
             }
             
             const totalDistance = fuelUps[lastFullTankIndex].mileage - firstFuelUp.mileage;
             const averageUsage = (totalLiters / totalDistance) * 100;
-            
+            const averageCost = totalCost / totalLiters;
+            const costperkm = totalCost / totalDistance;
+
             tableHTML += `
               <div class="statistics-summary">
                 <h4>Overall Statistics</h4>
                 <p>Average Consumption: ${averageUsage.toFixed(2)} L/100km</p>
+                <p>Average Cost per Liter: $${averageCost.toFixed(2)}</p>
                 <p>Total Distance: ${totalDistance.toLocaleString()} km</p>
                 <p>Total Fuel: ${totalLiters.toFixed(2)} L</p>
+                <p>Total Cost: $${totalCost.toFixed(2)}</p>
+                <p>Cost per km: $${costperkm.toFixed(2)}</p>
               </div>
             `;
           }
