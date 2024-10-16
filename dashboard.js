@@ -117,24 +117,31 @@ document.addEventListener('DOMContentLoaded', () => {
           fuelUps.forEach((fuelUp, index) => {
             const fuelUpElement = document.createElement('div');
             fuelUpElement.className = 'fuel-up-item';
-      
-            // Calculate gas usage for each fuel-up (except the first one in the array, which is the latest)
+          
             let gasUsage = '';
-            if (index < fuelUps.length - 1) {
-              const nextFuelUp = fuelUps[index + 1];
-              const distance = fuelUp.mileage - nextFuelUp.mileage;
-              const usage = (fuelUp.liters / distance) * 100;
-              const startDate = new Date(nextFuelUp.date).toLocaleDateString();
-              const endDate = new Date(fuelUp.date).toLocaleDateString();
-              gasUsage = `
-                <p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>
-                <p><strong>Usage Date Range:</strong> ${startDate} - ${endDate}</p>
-              `;
-      
-              totalLiters += fuelUp.liters;
-              totalDistance += distance;
+            let cumulativeLiters = fuelUp.liters;
+            let cumulativeDistance = 0;
+            let startDate = new Date(fuelUp.date);
+          
+            // Look for the next full fill-up
+            for (let i = index + 1; i < fuelUps.length; i++) {
+              const nextFuelUp = fuelUps[i];
+              cumulativeDistance += fuelUp.mileage - nextFuelUp.mileage;
+              
+              if (nextFuelUp.is_full_tank) {
+                const usage = (cumulativeLiters / cumulativeDistance) * 100;
+                const endDate = new Date(nextFuelUp.date);
+                gasUsage = `
+                  <p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>
+                  <p><strong>Date Range:</strong> ${endDate.toLocaleDateString()} - ${startDate.toLocaleDateString()}</p>
+                  <p><strong>Distance:</strong> ${cumulativeDistance} km</p>
+                `;
+                break;
+              }
+              
+              cumulativeLiters += nextFuelUp.liters;
             }
-      
+          
             fuelUpElement.innerHTML = `
               <p><strong>Date:</strong> ${new Date(fuelUp.date).toLocaleDateString()}</p>
               <p><strong>Mileage:</strong> ${fuelUp.mileage}</p>
@@ -142,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <p><strong>Price/L:</strong> $${fuelUp.price_per_liter.toFixed(3)}</p>
               <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(2)}</p>
               <p><strong>Station:</strong> ${fuelUp.gas_station}</p>
+              <p><strong>Full Tank:</strong> ${fuelUp.is_full_tank ? 'Yes' : 'No'}</p>
               ${gasUsage}
             `;
             fuelUpGrid.appendChild(fuelUpElement);
@@ -245,6 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <input type="number" id="liters" placeholder="Liters" step="0.001" required>
           <input type="number" id="price_per_liter" placeholder="Price per Liter" step="0.001" required>
           <input type="text" id="gas_station" placeholder="Gas Station" required>
+          <label>
+            <input type="checkbox" id="is_full_tank"> Full Tank
+          </label>
           <button type="submit">Add Fuel-Up</button>
         `;
         
@@ -256,7 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mileage: parseInt(document.getElementById('mileage').value),
             liters: parseFloat(document.getElementById('liters').value),
             price_per_liter: parseFloat(document.getElementById('price_per_liter').value),
-            gas_station: document.getElementById('gas_station').value
+            gas_station: document.getElementById('gas_station').value,
+            is_full_tank: document.getElementById('is_full_tank').checked
           };
           
           // Calculate total_cost

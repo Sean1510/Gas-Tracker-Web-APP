@@ -17,7 +17,7 @@ const handler = async (event) => {
 
   try {
     await client.connect();
-    const result = await client.query('SELECT * FROM fuel_ups WHERE vehicle_id = $1', [vehicleId]);
+    const result = await client.query('SELECT id, vehicle_id, date, mileage, liters, price_per_liter, total_cost, gas_station, is_full_tank FROM fuel_ups WHERE vehicle_id = $1', [vehicleId]);
     return {
       statusCode: 200,
       body: JSON.stringify(result.rows)
