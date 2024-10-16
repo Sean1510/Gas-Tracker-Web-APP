@@ -115,11 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const fuelUpElement = document.createElement('div');
             fuelUpElement.className = 'fuel-up-item';
       
-            // Calculate gas usage for each fuel-up (except the last one in the array, which is the oldest)
+            // Calculate gas usage for each fuel-up (except the first one in the array, which is the latest)
             let gasUsage = '';
-            if (index < fuelUps.length - 1) {
-              const nextFuelUp = fuelUps[index + 1];
-              const distance = fuelUp.mileage - nextFuelUp.mileage;
+            if (index > 0 && index <= fuelUps.length - 1) {
+              const nextFuelUp = fuelUps[index - 1];
+              const distance = nextFuelUp.mileage - fuelUp.mileage;
               const usage = (fuelUp.liters / distance) * 100;
               gasUsage = `<p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>`;
       
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const averageElement = document.createElement('div');
             averageElement.innerHTML = `
               <h4>Gas Usage Statistics</h4>
-              <p><strong>Average (excluding first fill-up):</strong> ${averageUsage.toFixed(2)} L/100km</p>
+              <p><strong>Average (excluding latest fill-up):</strong> ${averageUsage.toFixed(2)} L/100km</p>
             `;
             fuelUpsContainer.appendChild(averageElement);
           }
