@@ -128,11 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
               const nextFuelUp = fuelUps[i];
               cumulativeDistance += fuelUp.mileage - nextFuelUp.mileage;
               
-              if (nextFuelUp.is_full_tank) {
+              if (fuelUp.is_full_tank && nextFuelUp.is_full_tank) {
                 const usage = (cumulativeLiters / cumulativeDistance) * 100;
                 const endDate = new Date(nextFuelUp.date);
                 gasUsage = `
-                  <p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>
+                  <p><strong>Usage:</strong> ${usage.toFixed(3)} L/100km</p>
                   <p><strong>Date Range:</strong> ${endDate.toLocaleDateString()} - ${startDate.toLocaleDateString()}</p>
                   <p><strong>Distance:</strong> ${cumulativeDistance} km</p>
                 `;
@@ -145,9 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
             fuelUpElement.innerHTML = `
               <p><strong>Date:</strong> ${new Date(fuelUp.date).toLocaleDateString()}</p>
               <p><strong>Mileage:</strong> ${fuelUp.mileage}</p>
-              <p><strong>Liters:</strong> ${fuelUp.liters.toFixed(2)}</p>
+              <p><strong>Liters:</strong> ${fuelUp.liters.toFixed(3)}</p>
               <p><strong>Price/L:</strong> $${fuelUp.price_per_liter.toFixed(3)}</p>
-              <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(2)}</p>
+              <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(3)}</p>
               <p><strong>Station:</strong> ${fuelUp.gas_station}</p>
               <p><strong>Full Tank:</strong> ${fuelUp.is_full_tank ? 'Yes' : 'No'}</p>
               ${gasUsage}
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const averageElement = document.createElement('div');
             averageElement.innerHTML = `
               <h4>Gas Usage Statistics</h4>
-              <p><strong>Overall Average (excluding first fill-up):</strong> ${averageUsage.toFixed(2)} L/100km</p>
+              <p><strong>Overall Average (excluding first fill-up):</strong> ${averageUsage.toFixed(3)} L/100km</p>
             `;
             fuelUpsContainer.appendChild(averageElement);
           }
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <input type="number" id="price_per_liter" placeholder="Price per Liter" step="0.001" required>
           <input type="text" id="gas_station" placeholder="Gas Station" required>
           <label>
-            <input type="checkbox" id="is_full_tank"> Full Tank
+            <input type="checkbox" id="is_full_tank" checked> Full Tank
           </label>
           <button type="submit">Add Fuel-Up</button>
         `;
