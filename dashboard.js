@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
           document.getElementById('add-fuel-up-btn').addEventListener('click', () => showAddFuelUpForm(vehicleId));
         } else {
+          // Sort fuel-ups by date in descending order
+          fuelUps.sort((a, b) => new Date(b.date) - new Date(a.date));
+          
           fuelUpsContainer.innerHTML = '<h3>Fuel-Ups</h3>';
           const fuelUpGrid = document.createElement('div');
           fuelUpGrid.className = 'fuel-up-grid';
