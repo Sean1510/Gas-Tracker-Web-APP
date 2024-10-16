@@ -61,33 +61,86 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       function displayVehicles(vehicles, container) {
-        container.innerHTML = '<h2>Your Vehicles</h2>';
+        container.innerHTML = `
+          <div class="vehicles-header">
+            <h2>Your Vehicles</h2>
+            <button id="add-vehicle-btn" class="primary-button">
+              <span class="plus-icon">+</span> Add Vehicle
+            </button>
+          </div>
+        `;
+        
         const gridContainer = document.createElement('div');
-        gridContainer.className = 'grid-container';
+        gridContainer.className = 'vehicles-grid';
         
         vehicles.forEach(vehicle => {
-          const vehicleElement = document.createElement('div');
-          vehicleElement.className = 'grid-item';
-          vehicleElement.innerHTML = `
-            <h3>${vehicle.year} ${vehicle.make} ${vehicle.model}</h3>
-            <p><strong>VIN:</strong> ${vehicle.vin}</p>
-            <p><strong>Initial Mileage:</strong> ${vehicle.initial_mileage}</p>
-            <button class="view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">View Fuel-Ups</button>
+          const vehicleCard = document.createElement('div');
+          vehicleCard.className = 'vehicle-card';
+          
+          // Calculate a random gradient for the card header
+          const gradients = [
+            'linear-gradient(135deg, #667eea, #764ba2)',
+            'linear-gradient(135deg, #2193b0, #6dd5ed)',
+            'linear-gradient(135deg, #ee9ca7, #ffdde1)',
+            'linear-gradient(135deg, #42275a, #734b6d)',
+            'linear-gradient(135deg, #bdc3c7, #2c3e50)'
+          ];
+          const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+          
+          vehicleCard.innerHTML = `
+            <div class="vehicle-card-header" style="background: ${randomGradient}">
+              <div class="vehicle-icon">🚗</div>
+              <h3>${vehicle.year} ${vehicle.make}</h3>
+              <p class="vehicle-model">${vehicle.model}</p>
+            </div>
+            <div class="vehicle-card-body">
+              <div class="vehicle-info">
+                <div class="info-item">
+                  <span class="info-label">VIN</span>
+                  <span class="info-value">${vehicle.vin}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Initial Mileage</span>
+                  <span class="info-value">${vehicle.initial_mileage.toLocaleString()} km</span>
+                </div>
+              </div>
+              <button class="view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">
+                View Fuel History
+              </button>
+            </div>
           `;
-          gridContainer.appendChild(vehicleElement);
-      
-          vehicleElement.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
+          
+          gridContainer.appendChild(vehicleCard);
+          
+          vehicleCard.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
+            // Add active state to the clicked card and remove from others
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+              card.classList.remove('active');
+            });
+            vehicleCard.classList.add('active');
             displayFuelUps(vehicle.id);
           });
         });
         
         container.appendChild(gridContainer);
-      
-        const addVehicleBtn = document.createElement('button');
-        addVehicleBtn.textContent = 'Add Another Vehicle';
-        addVehicleBtn.addEventListener('click', showAddVehicleForm);
-        addVehicleBtn.style.marginTop = '20px';
-        container.appendChild(addVehicleBtn);
+        
+        // Add vehicle button event listener
+        document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
+      }
+
+      function displayAddVehiclePrompt(container) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🚗</div>
+            <h3>Welcome to Your Vehicle Tracker!</h3>
+            <p>You don't have any vehicles yet. Let's add your first one!</p>
+            <button id="add-vehicle-btn" class="primary-button">
+              <span class="plus-icon">+</span> Add Your First Vehicle
+            </button>
+          </div>
+        `;
+        
+        document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
       }
       
       function displayFuelUps(vehicleId) {
