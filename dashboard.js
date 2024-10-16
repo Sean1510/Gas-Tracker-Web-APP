@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Look for the next full fill-up
             for (let i = index + 1; i < fuelUps.length; i++) {
               const nextFuelUp = fuelUps[i];
-              cumulativeDistance += fuelUp.mileage - nextFuelUp.mileage;
+              cumulativeDistance = fuelUp.mileage - nextFuelUp.mileage;
               
               if (fuelUp.is_full_tank && nextFuelUp.is_full_tank) {
                 const usage = (cumulativeLiters / cumulativeDistance) * 100;
