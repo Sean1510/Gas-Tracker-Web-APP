@@ -43,7 +43,17 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!response.ok) {
             throw new Error('Failed to fetch vehicles');
           }
-          return await response.json();
+          const vehicles = await response.json();
+
+          // For each vehicle, update the `current_mileage` based on the latest fuel-up
+          for (let vehicle of vehicles) {
+            const latestFuelUp = await fetchLatestFuelUp(vehicle.id);
+            if (latestFuelUp && latestFuelUp.mileage) {
+              vehicle.current_mileage = latestFuelUp.mileage;
+            }
+          }
+      
+          return vehicles;
         } catch (error) {
           console.error('Error fetching vehicles:', error);
           return [];
@@ -98,8 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="info-value">${vehicle.vin}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Initial Mileage</span>
-                            <span class="info-value">${vehicle.initial_mileage.toLocaleString()} km</span>
+                            <span class="info-label">Current Mileage</span>
+                            <span class="info-value">${vehicle.current_mileage.toLocaleString()} km</span>
                         </div>
                     </div>
                     <button class="btn btn-secondary view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">
@@ -274,6 +284,21 @@ document.addEventListener('DOMContentLoaded', () => {
           return [];
         }
       }
+
+      async function fetchLatestFuelUp(vehicleId) {
+        try {
+            const fuelUps = await fetchFuelUps(vehicleId);
+            if (fuelUps.length === 0) {
+                return null; // No fuel-ups available
+            }
+            // Sort fuel-ups by date and return the latest mileage
+            fuelUps.sort((a, b) => new Date(b.date) - new Date(a.date));
+            return fuelUps[0].mileage;
+        } catch (error) {
+            console.error('Error fetching latest fuel-up:', error);
+            return null;
+        }
+      }
       
       function showAddVehicleForm() {
         const formHTML = `
@@ -298,8 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   <input type="number" id="year" required>
                 </div>
                 <div class="form-group">
-                  <label for="initial_mileage">Initial Mileage</label>
-                  <input type="number" id="initial_mileage" required>
+                  <label for="current_mileage">Current Mileage</label>
+                  <input type="number" id="current_mileage">
                 </div>
                 <div class="form-actions">
                   <button type="submit" class="btn btn-primary">Add Vehicle</button>
@@ -329,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             make: document.getElementById('make').value,
             model: document.getElementById('model').value,
             year: parseInt(document.getElementById('year').value),
-            initial_mileage: parseInt(document.getElementById('initial_mileage').value)
+            current_mileage: parseInt(document.getElementById('current_mileage').value)
           };
           
           try {
