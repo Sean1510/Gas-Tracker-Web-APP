@@ -160,6 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (fuelUps.length > 1) {
             const firstFuelUp = fuelUps[fuelUps.length - 1];
             const lastFullTankIndex = fuelUps.findIndex(fuelUp => fuelUp.is_full_tank);
+            // Calculate totalLiters by summing all fuel-ups from the first one to the last full tank
+            for (let i = 0; i <= lastFullTankIndex; i++) {
+              totalLiters += fuelUps[i].liters;
+            }
             const totalDistance = fuelUps[lastFullTankIndex].mileage - firstFuelUp.mileage;
             const averageUsage = (totalLiters / totalDistance) * 100;
             
