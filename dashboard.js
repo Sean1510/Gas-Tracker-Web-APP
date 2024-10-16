@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
           // Calculate and display average gas usage
           if (fuelUps.length > 1) {
-            const firstFuelUp = fuelUps[0];
+            const firstFuelUp = fuelUps[-1];
             const lastFullTankIndex = fuelUps.findIndex(fuelUp => fuelUp.is_full_tank);
             const totalDistance = fuelUps[lastFullTankIndex].mileage - firstFuelUp.mileage;
             const averageUsage = (totalLiters / totalDistance) * 100;
