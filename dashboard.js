@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
           fuelUpGrid.className = 'fuel-up-grid';
           
           let totalLiters = 0;
-          let totalDistance = 0;
       
           fuelUps.forEach((fuelUp, index) => {
             const fuelUpElement = document.createElement('div');
@@ -133,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const endDate = new Date(nextFuelUp.date);
                 gasUsage = `
                   <p><strong>Usage:</strong> ${usage.toFixed(3)} L/100km</p>
-                  <p><strong>Date Range:</strong> ${endDate.toLocaleDateString()} - ${startDate.toLocaleDateString()}</p>
+                  <p><strong>Usage Date Range:</strong> ${endDate.toLocaleDateString()} - ${startDate.toLocaleDateString()}</p>
                   <p><strong>Distance:</strong> ${cumulativeDistance} km</p>
                 `;
                 break;
@@ -159,6 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
           // Calculate and display average gas usage
           if (fuelUps.length > 1) {
+            const firstFuelUp = fuelUps[0];
+            const lastFullTankIndex = fuelUps.findIndex(fuelUp => fuelUp.is_full_tank);
+            const totalDistance = fuelUps[lastFullTankIndex].mileage - firstFuelUp.mileage;
             const averageUsage = (totalLiters / totalDistance) * 100;
             
             const averageElement = document.createElement('div');
