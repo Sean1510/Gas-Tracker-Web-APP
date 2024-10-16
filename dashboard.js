@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <p><strong>Mileage:</strong> ${fuelUp.mileage}</p>
               <p><strong>Liters:</strong> ${fuelUp.liters.toFixed(3)}</p>
               <p><strong>Price/L:</strong> $${fuelUp.price_per_liter.toFixed(3)}</p>
-              <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(3)}</p>
+              <p><strong>Total:</strong> $${fuelUp.total_cost.toFixed(2)}</p>
               <p><strong>Station:</strong> ${fuelUp.gas_station}</p>
               <p><strong>Full Tank:</strong> ${fuelUp.is_full_tank ? 'Yes' : 'No'}</p>
               ${gasUsage}
