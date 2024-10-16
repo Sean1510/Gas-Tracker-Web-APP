@@ -1,35 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const rootContainer = document.getElementById('root');
-    const logoutBtn = document.getElementById('logout-btn');
-    let user = null;
-  
-    // Check if the user is logged in
-    user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
+  const rootContainer = document.getElementById('root');
+  const logoutBtn = document.getElementById('logout-btn');
+  let user = null;
+
+  // Check if the user is logged in
+  user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
       window.location.href = 'index.html';
-    } else {
+  } else {
       initializeApp();
-    }
-  
-    logoutBtn.addEventListener('click', logout);
-  
-    function logout() {
+  }
+
+  logoutBtn.addEventListener('click', logout);
+
+  function logout() {
       localStorage.removeItem('user');
       window.location.href = 'index.html';
-    }
+  }
   
-    function initializeApp() {
-      console.log('Initializing App for User:', user.username);
-      
-      const vehiclesContainer = document.createElement('div');
-      vehiclesContainer.id = 'vehicles-container';
-      rootContainer.appendChild(vehiclesContainer);
-    
-      fetchVehicles().then(vehicles => {
+  function initializeApp() {
+    const vehiclesContainer = document.createElement('div');
+    vehiclesContainer.id = 'vehicles-container';
+    rootContainer.appendChild(vehiclesContainer);
+
+    fetchVehicles().then(vehicles => {
         if (vehicles.length === 0) {
-          displayAddVehiclePrompt(vehiclesContainer);
+            displayAddVehiclePrompt(vehiclesContainer);
         } else {
-          displayVehicles(vehicles, vehiclesContainer);
+            displayVehicles(vehicles, vehiclesContainer);
         }
       });
     }
@@ -62,69 +60,67 @@ document.addEventListener('DOMContentLoaded', () => {
       
       function displayVehicles(vehicles, container) {
         container.innerHTML = `
-          <div class="vehicles-header">
-            <h2>Your Vehicles</h2>
-            <button id="add-vehicle-btn" class="primary-button">
-              <span class="plus-icon">+</span> Add Vehicle
-            </button>
-          </div>
+            <div class="vehicles-header">
+                <h2>Your Vehicles</h2>
+                <button id="add-vehicle-btn" class="btn btn-primary">
+                    <span class="plus-icon">+</span> Add Vehicle
+                </button>
+            </div>
         `;
         
         const gridContainer = document.createElement('div');
         gridContainer.className = 'vehicles-grid';
         
         vehicles.forEach(vehicle => {
-          const vehicleCard = document.createElement('div');
-          vehicleCard.className = 'vehicle-card';
-          
-          // Calculate a random gradient for the card header
-          const gradients = [
-            'linear-gradient(135deg, #667eea, #764ba2)',
-            'linear-gradient(135deg, #2193b0, #6dd5ed)',
-            'linear-gradient(135deg, #ee9ca7, #ffdde1)',
-            'linear-gradient(135deg, #42275a, #734b6d)',
-            'linear-gradient(135deg, #bdc3c7, #2c3e50)'
-          ];
-          const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
-          
-          vehicleCard.innerHTML = `
-            <div class="vehicle-card-header" style="background: ${randomGradient}">
-              <div class="vehicle-icon">🚗</div>
-              <h3>${vehicle.year} ${vehicle.make}</h3>
-              <p class="vehicle-model">${vehicle.model}</p>
-            </div>
-            <div class="vehicle-card-body">
-              <div class="vehicle-info">
-                <div class="info-item">
-                  <span class="info-label">VIN</span>
-                  <span class="info-value">${vehicle.vin}</span>
+            const vehicleCard = document.createElement('div');
+            vehicleCard.className = 'vehicle-card';
+            
+            // Calculate a random gradient for the card header
+            const gradients = [
+                'linear-gradient(135deg, #667eea, #764ba2)',
+                'linear-gradient(135deg, #2193b0, #6dd5ed)',
+                'linear-gradient(135deg, #ee9ca7, #ffdde1)',
+                'linear-gradient(135deg, #42275a, #734b6d)',
+                'linear-gradient(135deg, #bdc3c7, #2c3e50)'
+            ];
+            const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+            
+            vehicleCard.innerHTML = `
+                <div class="vehicle-card-header" style="background: ${randomGradient}">
+                    <div class="vehicle-icon">🚗</div>
+                    <h3>${vehicle.year} ${vehicle.make}</h3>
+                    <p class="vehicle-model">${vehicle.model}</p>
                 </div>
-                <div class="info-item">
-                  <span class="info-label">Initial Mileage</span>
-                  <span class="info-value">${vehicle.initial_mileage.toLocaleString()} km</span>
+                <div class="vehicle-card-body">
+                    <div class="vehicle-info">
+                        <div class="info-item">
+                            <span class="info-label">VIN</span>
+                            <span class="info-value">${vehicle.vin}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Initial Mileage</span>
+                            <span class="info-value">${vehicle.initial_mileage.toLocaleString()} km</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">
+                        View Fuel History
+                    </button>
                 </div>
-              </div>
-              <button class="view-fuel-ups-btn" data-vehicle-id="${vehicle.id}">
-                View Fuel History
-              </button>
-            </div>
-          `;
-          
-          gridContainer.appendChild(vehicleCard);
-          
-          vehicleCard.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
-            // Add active state to the clicked card and remove from others
-            document.querySelectorAll('.vehicle-card').forEach(card => {
-              card.classList.remove('active');
+            `;
+            
+            gridContainer.appendChild(vehicleCard);
+            
+            vehicleCard.querySelector('.view-fuel-ups-btn').addEventListener('click', () => {
+                document.querySelectorAll('.vehicle-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                vehicleCard.classList.add('active');
+                displayFuelUps(vehicle.id);
             });
-            vehicleCard.classList.add('active');
-            displayFuelUps(vehicle.id);
-          });
         });
         
         container.appendChild(gridContainer);
         
-        // Add vehicle button event listener
         document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
       }
 
