@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const endDate = new Date(fuelUp.date).toLocaleDateString();
               gasUsage = `
                 <p><strong>Usage:</strong> ${usage.toFixed(2)} L/100km</p>
-                <p><strong>Date Range:</strong> ${startDate} - ${endDate}</p>
+                <p><strong>Usage Date Range:</strong> ${startDate} - ${endDate}</p>
               `;
       
               totalLiters += fuelUp.liters;
