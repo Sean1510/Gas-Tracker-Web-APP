@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
         tableHTML += `
           <tr>
-            <td>${new Date(fuelUp.date).toLocaleDateString()}</td>
+            <td>${new Date(fuelUp.date).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
             <td>${fuelUp.mileage.toLocaleString()}</td>
             <td>${fuelUp.liters.toFixed(3)}</td>
             <td>$${fuelUp.price_per_liter.toFixed(3)}</td>
