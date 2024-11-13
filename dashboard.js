@@ -144,6 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
       
   function displayFuelUps(vehicleId) {
+    // Remove any existing fuel-ups container
+    const existingContainer = document.getElementById('fuel-ups-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+
     fetchFuelUps(vehicleId).then(fuelUps => {
       const fuelUpsContainer = document.createElement('div');
       fuelUpsContainer.id = 'fuel-ups-container';
