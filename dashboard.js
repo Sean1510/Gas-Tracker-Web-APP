@@ -611,7 +611,9 @@ document.addEventListener('DOMContentLoaded', () => {
           y: {
             beginAtZero: false,
             ticks: {
-              callback: (value) => `$${value.toFixed(2)}`
+              callback: (value) => `$${value.toFixed(2)}`,
+              stepSize: 0.01,  // Set step size to avoid duplicates
+              precision: 2     // Set precision to 2 decimal places
             }
           }
         }
