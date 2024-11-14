@@ -274,6 +274,32 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `;
       }
+
+      tableHTML += `
+        <div class="price-trend-container">
+          <div class="price-trend-header">
+            <h4>Gas Price Trends</h4>
+            <div class="price-trend-controls">
+              <select id="timeRange" class="trend-select">
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="365">Last Year</option>
+                <option value="all">All Time</option>
+              </select>
+              <select id="stationFilter" class="trend-select">
+                <option value="all">All Stations</option>
+                ${[...new Set(fuelUps.map(fu => fu.gas_station))].map(station => 
+                  `<option value="${station}">${station}</option>`
+                ).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+          </div>
+        </div>
+      `;
   
       // Add button
       tableHTML += `
@@ -281,6 +307,24 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
   
       fuelUpsContainer.innerHTML = tableHTML;
+
+      if (fuelUps.length > 0) {
+        const timeRangeSelect = document.getElementById('timeRange');
+        const stationFilterSelect = document.getElementById('stationFilter');
+        
+        const updateChart = () => {
+          const days = timeRangeSelect.value === 'all' ? null : parseInt(timeRangeSelect.value);
+          const station = stationFilterSelect.value;
+          renderPriceChart(fuelUps, days, station);
+        };
+        
+        timeRangeSelect.addEventListener('change', updateChart);
+        stationFilterSelect.addEventListener('change', updateChart);
+        
+        // Initial chart render
+        updateChart();
+      }
+
       document.getElementById('add-fuel-up-btn').addEventListener('click', () => showAddFuelUpForm(vehicleId));
     });
   }
@@ -508,5 +552,72 @@ document.addEventListener('DOMContentLoaded', () => {
     notification.textContent = message;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
-  }             
+  }
+  
+  function renderPriceChart(fuelUps, days, station) {
+    const canvas = document.getElementById('priceChart');
+    if (canvas.chart) {
+      canvas.chart.destroy();
+    }
+  
+    let filteredData = [...fuelUps].sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+    // Apply station filter
+    if (station !== 'all') {
+      filteredData = filteredData.filter(fu => fu.gas_station === station);
+    }
+  
+    // Apply time range filter
+    if (days) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      filteredData = filteredData.filter(fu => new Date(fu.date) >= cutoffDate);
+    }
+  
+    const chartData = {
+      labels: filteredData.map(fu => new Date(fu.date).toLocaleDateString()),
+      datasets: [{
+        label: 'Price per Liter',
+        data: filteredData.map(fu => fu.price_per_liter),
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    };
+  
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `$${context.raw.toFixed(3)} per liter`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            }
+          },
+          y: {
+            beginAtZero: false,
+            ticks: {
+              callback: (value) => `$${value.toFixed(2)}`
+            }
+          }
+        }
+      }
+    };
+  
+    canvas.chart = new Chart(canvas, config);
+  }
 });

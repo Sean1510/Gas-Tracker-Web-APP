@@ -479,3 +479,59 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.price-trend-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.price-trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.price-trend-header h4 {
+  margin: 0;
+  color: #495057;
+  font-size: 1.2rem;
+}
+
+.price-trend-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.trend-select {
+  padding: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: white;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .price-trend-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .price-trend-controls {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .trend-select {
+    width: 100%;
+  }
+}
