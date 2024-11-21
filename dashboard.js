@@ -571,7 +571,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (days) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      filteredData = filteredData.filter(fu => new Date(fu.date) >= cutoffDate);
+      filteredData = filteredData.filter(fu => 
+        new Date(new Date(fu.date).toLocaleDateString('en-US', { timeZone: 'UTC' })) >= 
+        new Date(cutoffDate.toLocaleDateString('en-US', { timeZone: 'UTC' }))
+      );
     }
   
     const chartData = {
