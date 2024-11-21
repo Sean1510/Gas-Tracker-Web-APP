@@ -570,11 +570,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply time range filter
     if (days) {
       const cutoffDate = new Date();
+      cutoffDate.setHours(0, 0, 0, 0);  // Set to start of day
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      filteredData = filteredData.filter(fu => 
-        new Date(new Date(fu.date).toLocaleDateString('en-US', { timeZone: 'UTC' })) >= 
-        new Date(cutoffDate.toLocaleDateString('en-US', { timeZone: 'UTC' }))
-      );
+      
+      filteredData = filteredData.filter(fu => {
+        const fuelUpDate = new Date(fu.date);
+        fuelUpDate.setHours(0, 0, 0, 0);  // Set to start of day
+        return fuelUpDate >= cutoffDate;
+      });
     }
   
     const chartData = {
