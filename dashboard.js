@@ -559,14 +559,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (canvas.chart) {
       canvas.chart.destroy();
     }
-  
+
     let filteredData = [...fuelUps].sort((a, b) => new Date(a.date) - new Date(b.date));
-  
+
     // Apply station filter
     if (station !== 'all') {
       filteredData = filteredData.filter(fu => fu.gas_station === station);
     }
-  
+
     // Apply time range filter
     if (days) {
       const cutoffDate = new Date();
@@ -574,14 +574,20 @@ document.addEventListener('DOMContentLoaded', () => {
       cutoffDate.setDate(cutoffDate.getDate() - days);
       
       filteredData = filteredData.filter(fu => {
-        const fuelUpDate = new Date(fu.date);
-        fuelUpDate.setHours(0, 0, 0, 0);  // Set to start of day
+        // Create date object and adjust for local timezone
+        const fuelUpDate = new Date(fu.date + 'T00:00:00');
+        fuelUpDate.setMinutes(fuelUpDate.getMinutes() + fuelUpDate.getTimezoneOffset());
         return fuelUpDate >= cutoffDate;
       });
     }
-  
+
     const chartData = {
-      labels: filteredData.map(fu => new Date(fu.date).toLocaleDateString()),
+      labels: filteredData.map(fu => {
+        // Create date object and adjust for local timezone
+        const date = new Date(fu.date + 'T00:00:00');
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+        return date.toLocaleDateString();
+      }),
       datasets: [{
         label: 'Price per Liter',
         data: filteredData.map(fu => fu.price_per_liter),
@@ -591,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fill: true
       }]
     };
-  
+
     const config = {
       type: 'line',
       data: chartData,
@@ -604,7 +610,12 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           tooltip: {
             callbacks: {
-              label: (context) => `$${context.raw.toFixed(3)} per liter`
+              label: (context) => `$${context.raw.toFixed(3)} per liter`,
+              title: (tooltipItems) => {
+                const date = new Date(filteredData[tooltipItems[0].dataIndex].date + 'T00:00:00');
+                date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+                return date.toLocaleDateString();
+              }
             }
           }
         },
@@ -625,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     };
-  
+
     canvas.chart = new Chart(canvas, config);
   }
 });
