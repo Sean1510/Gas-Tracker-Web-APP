@@ -574,19 +574,16 @@ document.addEventListener('DOMContentLoaded', () => {
       cutoffDate.setDate(cutoffDate.getDate() - days);
       
       filteredData = filteredData.filter(fu => {
-        // Create date object and adjust for local timezone
-        const fuelUpDate = new Date(fu.date + 'T00:00:00');
-        fuelUpDate.setMinutes(fuelUpDate.getMinutes() + fuelUpDate.getTimezoneOffset());
+        const fuelUpDate = new Date(fu.date);
+        fuelUpDate.setUTCHours(0, 0, 0, 0);  // Set to start of UTC day
         return fuelUpDate >= cutoffDate;
       });
     }
 
     const chartData = {
       labels: filteredData.map(fu => {
-        // Create date object and adjust for local timezone
-        const date = new Date(fu.date + 'T00:00:00');
-        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-        return date.toLocaleDateString();
+        const date = new Date(fu.date);
+        return new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toLocaleDateString();
       }),
       datasets: [{
         label: 'Price per Liter',
@@ -612,9 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
             callbacks: {
               label: (context) => `$${context.raw.toFixed(3)} per liter`,
               title: (tooltipItems) => {
-                const date = new Date(filteredData[tooltipItems[0].dataIndex].date + 'T00:00:00');
-                date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-                return date.toLocaleDateString();
+                const date = new Date(filteredData[tooltipItems[0].dataIndex].date);
+                return new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toLocaleDateString();
               }
             }
           }
