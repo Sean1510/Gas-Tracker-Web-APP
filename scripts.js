@@ -4,6 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const authSubmit = document.getElementById('auth-submit');
   const toggleAuthButton = document.getElementById('toggle-auth');
   const emailContainer = document.getElementById('email-container');
+  const googleLoginButton = document.createElement('button');
+  googleLoginButton.id = 'google-login';
+  googleLoginButton.className = 'google-btn';
+  googleLoginButton.innerHTML = '<img src="google-icon.png" alt="Google"> Sign in with Google';
+  
+  // Insert Google button after the form
+  authForm.insertAdjacentElement('afterend', googleLoginButton);
+
   let isRegistering = false;
 
   // Check if the user is already logged in
@@ -52,6 +60,58 @@ document.addEventListener('DOMContentLoaded', () => {
           showNotification('An error occurred, please try again later.', 'error');
       }
   });
+
+  // Add Google login handler
+  googleLoginButton.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      // Get Google auth URL from backend
+      const response = await fetch('/.netlify/functions/get-google-auth-url');
+      const { url } = await response.json();
+      
+      // Redirect to Google login
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification('Failed to initialize Google login', 'error');
+    }
+  });
+
+  // Check for Google auth callback
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  
+  if (code) {
+    handleGoogleCallback(code);
+  }
+
+  async function handleGoogleCallback(code) {
+    try {
+      const response = await fetch('/.netlify/functions/verify-google-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const user = { 
+          id: data.user.id, 
+          username: data.user.username, 
+          token: data.token,
+          isGoogleUser: true
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+        window.location.href = 'dashboard.html';
+      } else {
+        showNotification(data.message, 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification('Google authentication failed', 'error');
+    }
+  }
 
   function showNotification(message, type) {
       const notification = document.createElement('div');
