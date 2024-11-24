@@ -1,6 +1,6 @@
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
-const { createUser, findUserByEmail } = require('./db-helpers'); // You'll need to implement these
+const { findUserByEmail, createUser } = require('./db-helpers');
 
 const oauth2Client = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
@@ -10,9 +10,7 @@ const oauth2Client = new OAuth2Client({
 
 exports.handler = async function(event, context) {
   try {
-    // Handle both GET (from Google redirect) and POST (from frontend)
     if (event.httpMethod === 'GET') {
-      // Handle Google's redirect
       const code = event.queryStringParameters?.code;
       if (!code) {
         return {
@@ -20,14 +18,11 @@ exports.handler = async function(event, context) {
           body: JSON.stringify({ error: 'No authorization code provided' })
         };
       }
-      
-      // Process the code
-      return await handleGoogleAuth(code);
+      return await handleGoogleAuth(code, event.httpMethod);
     } 
     else if (event.httpMethod === 'POST') {
-      // Handle direct POST requests
       const { code } = JSON.parse(event.body);
-      return await handleGoogleAuth(code);
+      return await handleGoogleAuth(code, event.httpMethod);
     }
     else {
       return {
@@ -48,8 +43,7 @@ exports.handler = async function(event, context) {
   }
 };
 
-// Separate the auth logic into its own function
-async function handleGoogleAuth(code) {
+async function handleGoogleAuth(code, httpMethod) {
   try {
     // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code);
@@ -85,7 +79,7 @@ async function handleGoogleAuth(code) {
     );
 
     // For GET requests, redirect to frontend with token
-    if (event.httpMethod === 'GET') {
+    if (httpMethod === 'GET') {
       return {
         statusCode: 302,
         headers: {
