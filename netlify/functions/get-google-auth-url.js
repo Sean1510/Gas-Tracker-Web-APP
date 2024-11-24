@@ -4,7 +4,7 @@ const { OAuth2Client } = require('google-auth-library');
 const oauth2Client = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri: process.env.GOOGLE_REDIRECT_URL, // e.g., "https://your-site.netlify.app/.netlify/functions/verify-google-auth"
+  redirectUri: process.env.GOOGLE_REDIRECT_URI, // e.g., "https://your-site.netlify.app/.netlify/functions/verify-google-auth"
 });
 
 exports.handler = async function(event, context) {

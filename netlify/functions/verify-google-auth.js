@@ -5,13 +5,25 @@ const { createUser, findUserByEmail } = require('./db-helpers'); // You'll need 
 const oauth2Client = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri: process.env.GOOGLE_REDIRECT_URL
+  redirectUri: process.env.GOOGLE_REDIRECT_URI
 });
 
 exports.handler = async function(event, context) {
+  // Add debugging logs
+  console.log('HTTP Method:', event.httpMethod);
+  console.log('Headers:', event.headers);
+  console.log('Body:', event.body);
+
   try {
     if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: 'Method Not Allowed' };
+      return {
+        statusCode: 405,
+        body: JSON.stringify({
+          error: 'Method Not Allowed',
+          method: event.httpMethod,
+          allowedMethod: 'POST'
+        })
+      };
     }
 
     const { code } = JSON.parse(event.body);
