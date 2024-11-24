@@ -14,7 +14,7 @@ exports.handler = async (event) => {
 
   try {
     const res = await pool.query(
-      'SELECT id, username, password_hash FROM users WHERE username = $1',
+      'SELECT id, username, password_hash, google_id FROM users WHERE username = $1',
       [username]
     );
     
@@ -24,6 +24,15 @@ exports.handler = async (event) => {
       return {
         statusCode: 401,
         body: JSON.stringify({ message: 'Invalid username or password.' }),
+      };
+    }
+
+    if (user.google_id) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ 
+          message: 'This account uses Google authentication. Please sign in with Google.' 
+        }),
       };
     }
 
