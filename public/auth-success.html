@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Success</title>
+</head>
+<body>
+    <p>Authentication successful! Redirecting...</p>
+    <script>
+        // Get token and user data from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const user = JSON.parse(decodeURIComponent(urlParams.get('user')));
+
+        // Store in localStorage
+        if (token && user) {
+            localStorage.setItem('user', JSON.stringify({
+                ...user,
+                token,
+                isGoogleUser: true
+            }));
+            
+            // Redirect to dashboard
+            window.location.href = '/dashboard.html';
+        } else {
+            // Handle error
+            console.error('Missing token or user data');
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html> 

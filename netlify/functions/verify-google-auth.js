@@ -9,25 +9,48 @@ const oauth2Client = new OAuth2Client({
 });
 
 exports.handler = async function(event, context) {
-  // Add debugging logs
-  console.log('HTTP Method:', event.httpMethod);
-  console.log('Headers:', event.headers);
-  console.log('Body:', event.body);
-
   try {
-    if (event.httpMethod !== 'POST') {
+    // Handle both GET (from Google redirect) and POST (from frontend)
+    if (event.httpMethod === 'GET') {
+      // Handle Google's redirect
+      const code = event.queryStringParameters?.code;
+      if (!code) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'No authorization code provided' })
+        };
+      }
+      
+      // Process the code
+      return await handleGoogleAuth(code);
+    } 
+    else if (event.httpMethod === 'POST') {
+      // Handle direct POST requests
+      const { code } = JSON.parse(event.body);
+      return await handleGoogleAuth(code);
+    }
+    else {
       return {
         statusCode: 405,
         body: JSON.stringify({
           error: 'Method Not Allowed',
           method: event.httpMethod,
-          allowedMethod: 'POST'
+          allowedMethods: ['GET', 'POST']
         })
       };
     }
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Authentication failed', details: error.message })
+    };
+  }
+};
 
-    const { code } = JSON.parse(event.body);
-
+// Separate the auth logic into its own function
+async function handleGoogleAuth(code) {
+  try {
     // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
@@ -54,13 +77,24 @@ exports.handler = async function(event, context) {
       });
     }
 
-    // Generate JWT token for your app
+    // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
+    // For GET requests, redirect to frontend with token
+    if (event.httpMethod === 'GET') {
+      return {
+        statusCode: 302,
+        headers: {
+          'Location': `/auth-success.html?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`,
+        },
+      };
+    }
+
+    // For POST requests, return JSON
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -73,12 +107,8 @@ exports.handler = async function(event, context) {
         token
       })
     };
-
   } catch (error) {
-    console.error('Error verifying Google auth:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Authentication failed' })
-    };
+    console.error('Error in handleGoogleAuth:', error);
+    throw error;
   }
-};
+}
