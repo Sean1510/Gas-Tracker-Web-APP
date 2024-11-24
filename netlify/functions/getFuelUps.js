@@ -1,11 +1,7 @@
-const { Client } = require('pg');
+const pool = require('./db-pool');
 const verifyToken = require('./verifyToken');
 
 const handler = async (event) => {
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-  });
-
   const vehicleId = event.queryStringParameters.vehicleId;
 
   if (!vehicleId) {
@@ -16,8 +12,10 @@ const handler = async (event) => {
   }
 
   try {
-    await client.connect();
-    const result = await client.query('SELECT id, vehicle_id, date, mileage, liters, price_per_liter, total_cost, gas_station, is_full_tank FROM fuel_ups WHERE vehicle_id = $1', [vehicleId]);
+    const result = await pool.query(
+      'SELECT id, vehicle_id, date, mileage, liters, price_per_liter, total_cost, gas_station, is_full_tank FROM fuel_ups WHERE vehicle_id = $1', 
+      [vehicleId]
+    );
     return {
       statusCode: 200,
       body: JSON.stringify(result.rows)
@@ -28,8 +26,6 @@ const handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to retrieve fuel-ups' })
     };
-  } finally {
-    await client.end();
   }
 };
 
