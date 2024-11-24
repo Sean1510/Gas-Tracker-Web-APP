@@ -1,12 +1,8 @@
-const { Client } = require('pg');
+const pool = require('./db-pool');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.handler = async (event) => {
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-  });
-
   const { username, password } = JSON.parse(event.body);
 
   if (!username || !password) {
@@ -17,8 +13,11 @@ exports.handler = async (event) => {
   }
 
   try {
-    await client.connect();
-    const res = await client.query('SELECT id, username, password_hash FROM users WHERE username = $1', [username]);
+    const res = await pool.query(
+      'SELECT id, username, password_hash FROM users WHERE username = $1',
+      [username]
+    );
+    
     const user = res.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
@@ -52,7 +51,5 @@ exports.handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({ message: 'An internal server error occurred.' }),
     };
-  } finally {
-    await client.end();
   }
 };

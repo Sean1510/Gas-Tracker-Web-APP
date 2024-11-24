@@ -1,11 +1,5 @@
-const { Client } = require('pg');
+const pool = require('./db-pool');
 const bcrypt = require('bcrypt');
-
-// Setup PostgreSQL client
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
@@ -25,13 +19,10 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    await client.connect();
-
     // Check if the user already exists
     const userCheckQuery = 'SELECT * FROM users WHERE username = $1 OR email = $2';
-    const userCheckResult = await client.query(userCheckQuery, [username, email]);
+    const userCheckResult = await pool.query(userCheckQuery, [username, email]);
     if (userCheckResult.rows.length > 0) {
-      await client.end();
       return {
         statusCode: 409,
         body: JSON.stringify({ message: 'Username or Email already exists' }),
@@ -48,10 +39,8 @@ exports.handler = async (event, context) => {
       RETURNING id, username, email, created_at
     `;
     const values = [username, email, passwordHash];
-    const result = await client.query(query, values);
+    const result = await pool.query(query, values);
     const newUser = result.rows[0];
-
-    await client.end();
 
     return {
       statusCode: 201,

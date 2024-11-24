@@ -1,4 +1,4 @@
-const { Client } = require('pg');
+const pool = require('./db-pool');
 const jwt = require('jsonwebtoken');
 
 exports.handler = async (event) => {
@@ -16,17 +16,11 @@ exports.handler = async (event) => {
     };
   }
 
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-  });
-
   const { vin, make, model, year, currentMileage } = JSON.parse(event.body);
-
   const mileage = currentMileage ?? 0;
 
   try {
-    await client.connect();
-    const result = await client.query(
+    const result = await pool.query(
       'INSERT INTO vehicles(user_id, vin, make, model, year, current_mileage) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
       [userId, vin, make, model, year, mileage]
     );
@@ -41,7 +35,5 @@ exports.handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({ message: 'An error occurred while adding the vehicle.' })
     };
-  } finally {
-    await client.end();
   }
 };
