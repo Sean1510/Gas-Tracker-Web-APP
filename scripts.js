@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const code = urlParams.get('code');
   
   if (code) {
+    console.log('Got code:', code); // Add this for debugging
     handleGoogleCallback(code);
   }
 
@@ -102,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await response.json();
+      console.log('Response:', data);
 
       if (response.ok) {
         const user = { 
