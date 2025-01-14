@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const fuelUpData = {
         vehicle_id: vehicleId,
         date: document.getElementById('date').value,
-        mileage: parseInt(document.getElementById('mileage').value),
+        mileage: parseFloat(document.getElementById('mileage').value),
         liters: parseFloat(document.getElementById('liters').value),
         price_per_liter: parseFloat(document.getElementById('price_per_liter').value),
         gas_station: document.getElementById('gas_station').value,
