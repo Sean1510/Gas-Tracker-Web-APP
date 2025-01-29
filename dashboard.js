@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="form-group">
               <label for="mileage">Mileage</label>
-              <input type="number" id="mileage" required>
+              <input type="number" id="mileage" step="0.1" required>
             </div>
             <div class="form-group">
               <label for="liters">Liters</label>
