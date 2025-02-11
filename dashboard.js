@@ -1,14 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
   const rootContainer = document.getElementById('root');
   const logoutBtn = document.getElementById('logout-btn');
-  let user = null;
+  let user = JSON.parse(localStorage.getItem('user'));
 
-  // Check if the user is logged in
-  user = JSON.parse(localStorage.getItem('user'));
-  if (!user) {
+  // Helper function to decode the token and check expiration
+  function isTokenExpired(token) {
+    try {
+      // Decode the payload from the JWT (token format: header.payload.signature)
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      // Compare current time (in seconds) with the token's expiration time
+      return payload.exp < (Date.now() / 1000);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return true;
+    }
+  }
+
+  // If there's no user or the token is expired, log out
+  if (!user || isTokenExpired(user.token)) {
+    localStorage.removeItem('user');
     window.location.href = 'index.html';
-  } else {
-    initializeApp();
+    return;
   }
 
   logoutBtn.addEventListener('click', logout);
@@ -41,6 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       if (!response.ok) {
+        if (response.status === 401) {
+          // Token invalid or expired, force logout
+          logout();
+          return [];
+        }
         throw new Error('Failed to fetch vehicles');
       }
       return await response.json();
@@ -339,6 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       if (!response.ok) {
+        if (response.status === 401) {
+          logout();
+          return [];
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch fuel-ups');
       }
