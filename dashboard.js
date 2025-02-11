@@ -3,20 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logout-btn');
   let user = JSON.parse(localStorage.getItem('user'));
 
-  // Helper function to decode the token and check expiration
+  // Helper function to decode the token and check expiration (ensure numeric comparison)
   function isTokenExpired(token) {
     try {
-      // Decode the payload from the JWT (token format: header.payload.signature)
+      // Decode the payload from the JWT (format: header.payload.signature)
       const payload = JSON.parse(window.atob(token.split('.')[1]));
-      // Compare current time (in seconds) with the token's expiration time
-      return payload.exp < (Date.now() / 1000);
+      // Convert the exp property explicitly to a number before comparing
+      return Number(payload.exp) < (Date.now() / 1000);
     } catch (error) {
       console.error("Error decoding token:", error);
       return true;
     }
   }
 
-  // If there's no user or the token is expired, log out
+  // If there's no user or the token is expired, log the user out
   if (!user || isTokenExpired(user.token)) {
     localStorage.removeItem('user');
     window.location.href = 'index.html';
@@ -24,13 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   logoutBtn.addEventListener('click', logout);
-
   function logout() {
     localStorage.removeItem('user');
     window.location.href = 'index.html';
   }
   
+  // This function sets up the dashboard UI.
+  // (Earlier, the app never "started" because initializeApp() wasn't called on load.)
   function initializeApp() {
+    // Remove any previously added vehicles container so the UI refreshes cleanly.
+    const existingContainer = document.getElementById('vehicles-container');
+    if (existingContainer) {
+      existingContainer.remove();
+    }
+    
     const vehiclesContainer = document.createElement('div');
     vehiclesContainer.id = 'vehicles-container';
     rootContainer.appendChild(vehiclesContainer);
@@ -54,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (!response.ok) {
         if (response.status === 401) {
-          // Token invalid or expired, force logout
+          // Token invalid/expired—force logout.
           logout();
           return [];
         }
@@ -69,8 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
   function displayAddVehiclePrompt(container) {
     container.innerHTML = `
-      <p>You don't have any vehicles yet. Let's add one!</p>
-      <button id="add-vehicle-btn">Add Vehicle</button>
+      <div class="empty-state">
+        <div class="empty-state-icon">🚗</div>
+        <h3>Welcome to Your Vehicle Tracker!</h3>
+        <p>You don't have any vehicles yet. Let's add your first one!</p>
+        <button id="add-vehicle-btn" class="primary-button">
+          <span class="plus-icon">+</span> Add Your First Vehicle
+        </button>
+      </div>
     `;
     document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
   }
@@ -92,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const vehicleCard = document.createElement('div');
       vehicleCard.className = 'vehicle-card';
       
-      // Calculate a random gradient for the card header
+      // Random gradient for the card header
       const gradients = [
         'linear-gradient(135deg, #667eea, #764ba2)',
         'linear-gradient(135deg, #2193b0, #6dd5ed)',
@@ -102,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
       const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
 
-      // Fetch latest mileage from fuel-ups
+      // Fetch the latest mileage from fuel-ups
       const latestMileage = await fetchLatestFuelUp(vehicle.id);
       const currentMileage = latestMileage !== null ? latestMileage : vehicle.current_mileage;
       
@@ -141,32 +154,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     container.appendChild(gridContainer);
-    
     document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
   }
 
-  function displayAddVehiclePrompt(container) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">🚗</div>
-        <h3>Welcome to Your Vehicle Tracker!</h3>
-        <p>You don't have any vehicles yet. Let's add your first one!</p>
-        <button id="add-vehicle-btn" class="primary-button">
-          <span class="plus-icon">+</span> Add Your First Vehicle
-        </button>
-      </div>
-    `;
-    
-    document.getElementById('add-vehicle-btn').addEventListener('click', showAddVehicleForm);
-  }
-      
   function displayFuelUps(vehicleId) {
-    // Remove any existing fuel-ups container
     const existingContainer = document.getElementById('fuel-ups-container');
     if (existingContainer) {
-        existingContainer.remove();
+      existingContainer.remove();
     }
-
+    
     fetchFuelUps(vehicleId).then(fuelUps => {
       const fuelUpsContainer = document.createElement('div');
       fuelUpsContainer.id = 'fuel-ups-container';
@@ -374,9 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const fuelUps = await fetchFuelUps(vehicleId);
       if (fuelUps.length === 0) {
-          return null; // No fuel-ups available
+        return null;
       }
-      // Sort fuel-ups by date and return the latest mileage
       fuelUps.sort((a, b) => new Date(b.date) - new Date(a.date));
       return fuelUps[0].mileage;
     } catch (error) {
@@ -419,19 +414,14 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `;
-  
     document.body.insertAdjacentHTML('beforeend', formHTML);
-  
     const modal = document.getElementById('addVehicleModal');
     const form = document.getElementById('addVehicleForm');
     const cancelButton = document.getElementById('cancelAddVehicle');
-  
     modal.style.display = 'block';
-  
     cancelButton.addEventListener('click', () => {
       modal.remove();
     });
-  
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const vehicleData = {
@@ -441,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
         year: parseInt(document.getElementById('year').value),
         current_mileage: parseInt(document.getElementById('current_mileage').value)
       };
-      
       try {
         const response = await fetch('/.netlify/functions/addVehicle', {
           method: 'POST',
@@ -451,11 +440,9 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           body: JSON.stringify(vehicleData)
         });
-        
         if (!response.ok) {
           throw new Error('Failed to add vehicle');
         }
-        
         modal.remove();
         showNotification('Vehicle added successfully', 'success');
         initializeApp(); // Refresh the vehicles list
@@ -506,29 +493,21 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `;
-  
     document.body.insertAdjacentHTML('beforeend', formHTML);
-  
     const modal = document.getElementById('addFuelUpModal');
     const form = document.getElementById('addFuelUpForm');
     const cancelButton = document.getElementById('cancelAddFuelUp');
-  
     modal.style.display = 'block';
-  
     cancelButton.addEventListener('click', () => {
       modal.remove();
     });
-  
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      // Check if it's the first fuel-up
       const fuelUps = await fetchFuelUps(vehicleId);
       if (fuelUps.length === 0 && !document.getElementById('is_full_tank').checked) {
         showNotification("To ensure accuracy of your gas usage calculations, your first fill-up must be full. Please try again.", 'error');
         return;
       }
-  
       const fuelUpData = {
         vehicle_id: vehicleId,
         date: document.getElementById('date').value,
@@ -538,10 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gas_station: document.getElementById('gas_station').value,
         is_full_tank: document.getElementById('is_full_tank').checked
       };
-      
-      // Calculate total_cost
       fuelUpData.total_cost = fuelUpData.liters * fuelUpData.price_per_liter;
-      
       try {
         const response = await fetch('/.netlify/functions/addFuelUp', {
           method: 'POST',
@@ -551,11 +527,9 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           body: JSON.stringify(fuelUpData)
         });
-        
         if (!response.ok) {
           throw new Error('Failed to add fuel-up');
         }
-        
         modal.remove();
         showNotification('Fuel-up added successfully', 'success');
         displayFuelUps(vehicleId); // Refresh the fuel-ups list
@@ -566,7 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Add this helper function for notifications
   function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -580,27 +553,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (canvas.chart) {
       canvas.chart.destroy();
     }
-
     let filteredData = [...fuelUps].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    // Apply station filter
     if (station !== 'all') {
       filteredData = filteredData.filter(fu => fu.gas_station === station);
     }
-
-    // Apply time range filter
     if (days) {
       const cutoffDate = new Date();
-      cutoffDate.setHours(0, 0, 0, 0);  // Set to start of day
+      cutoffDate.setHours(0, 0, 0, 0);
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      
       filteredData = filteredData.filter(fu => {
         const fuelUpDate = new Date(fu.date);
-        fuelUpDate.setUTCHours(0, 0, 0, 0);  // Set to start of UTC day
+        fuelUpDate.setUTCHours(0, 0, 0, 0);
         return fuelUpDate >= cutoffDate;
       });
     }
-
     const chartData = {
       labels: filteredData.map(fu => {
         const date = new Date(fu.date);
@@ -615,7 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fill: true
       }]
     };
-
     const config = {
       type: 'line',
       data: chartData,
@@ -623,9 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
               label: (context) => `$${context.raw.toFixed(3)} per liter`,
@@ -637,23 +600,20 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         scales: {
-          x: {
-            grid: {
-              display: false
-            }
-          },
-          y: {
-            beginAtZero: false,
-            ticks: {
-              callback: (value) => `$${value.toFixed(2)}`,
-              stepSize: 0.01,  // Set step size to avoid duplicates
-              precision: 2     // Set precision to 2 decimal places
-            }
+          x: { grid: { display: false } },
+          y: { beginAtZero: false,
+               ticks: {
+                 callback: (value) => `$${value.toFixed(2)}`,
+                 stepSize: 0.01,
+                 precision: 2
+               }
           }
         }
       }
     };
-
     canvas.chart = new Chart(canvas, config);
   }
+  
+  // IMPORTANT: Start the application by initializing the dashboard UI
+  initializeApp();
 });
