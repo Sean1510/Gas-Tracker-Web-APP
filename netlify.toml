@@ -5,3 +5,7 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+[context.DEV]
+  command = "npm run build:staging"
+  environment = { API_ENV = "staging" }
