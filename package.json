@@ -6,7 +6,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "react-scripts build",
     "build:staging": "react-scripts build --mode staging"
-  }
   },
   "keywords": [],
   "author": "",
